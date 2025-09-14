@@ -10,12 +10,16 @@ static string trim(const string &s){
     size_t end= s.find_last_not_of("\t\n\r\v\f ");
     return s.substr(start, end-start+1);
 }
-void CLI::run() {
+void CLI::run(vector<string> const &commandArgs) {
     if (!redisClient.connectToServer()) {
         return;
     }
+    
+    std::cout << "Connected to Redis at " <<  redisClient.getSocketFd() << std::endl;
+    if(!commandArgs.empty()){
+        executeCommand(commandArgs);
+    }
 
-    std::cout << "Connected to Redis at" << redisClient.getSocketFd() << std::endl;
 
     while(true){
         cout << host << ":" << port << "> ";
@@ -37,10 +41,6 @@ void CLI::run() {
 
         vector<string> args= RedisCommandHandler::splitArgs(line);
         if(args.empty()) continue;
-
-        // for(const auto &arg:args){
-        //     cout << arg << endl;
-        // }
         string command= RedisCommandHandler::buildRespCommand(args);
         if(!redisClient.sendCommand(command)){
             cerr << "Failed to send command to server.\n";
@@ -55,4 +55,15 @@ void CLI::run() {
     redisClient.disconnect();
 
 
+}
+void CLI::executeCommand(const vector<string>& args){
+    if(args.empty()) return;
+    string command= RedisCommandHandler::buildRespCommand(args);
+    if(!redisClient.sendCommand(command)){
+        cerr << "Failed to send command to server.\n";
+        return;
+    }
+
+    string response= ResponseParser::parseResponse(redisClient.getSocketFd());
+    cout << response << endl;
 }

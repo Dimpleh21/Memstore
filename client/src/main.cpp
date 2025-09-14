@@ -7,6 +7,7 @@ int main(int argc, char* argv[]){
     string host= "127.0.0.1";
     int port = 6379;
     //parsing command line arguments
+    vector<string> commandArgs;
     int i=1;
     while(i <argc){
         string arg= argv[i];
@@ -15,11 +16,15 @@ int main(int argc, char* argv[]){
         }else if(arg=="-p" && i+1<argc){
             port= stoi(argv[++i]);
         }else{
+            while(i<argc){
+                commandArgs.push_back(argv[i]);
+                i++;
+            }
             break;
         }
         ++i;
     }
 
     CLI cli(host, port);
-    cli.run();
+    cli.run(commandArgs);
 }

@@ -9,7 +9,8 @@ using namespace std;
 class CLI{
     public:
         CLI(const string host, int port);
-        void run();
+        void run(const vector<string>& commandArgs);
+        void executeCommand(const vector<string>& args);
 
     private:
         RedisClient redisClient;

@@ -2,7 +2,7 @@
 #define REDIS_COMMAND_HANDLER_H
 #include <string>
 
-class RedisCommandHandler(){
+class RedisCommandHandler{
     public:
         RedisCommandHandler();
         std::string processCommand(const std::string& commandLine);
