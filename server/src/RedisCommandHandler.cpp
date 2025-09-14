@@ -68,10 +68,14 @@ static std::string handleLlen(const std::vector<std::string>& tokens, RedisDatab
 
 
 static std::string handleLPush(const std::vector<std::string>& tokens, RedisDatabase& db){
-    if(tokens.size()< 3){
-        return "-ERROR LPUSH requires a key and a value";
+   if(tokens.size()< 3){
+        return "-ERROR RPUSH requires a key and a value";
     }
-    db.lpush(tokens[1], tokens[2]);
+
+    for(auto& i= 2; i< tokens.size();i++){
+        db.lpush(tokens[1], tokens[i]);
+   
+    }
     ssize_t len= db.llen(tokens[1]);
     return ":" + std::to_string(len)+"\r\n";
 }
@@ -81,9 +85,14 @@ static std::string handleRPush(const std::vector<std::string>& tokens, RedisData
     if(tokens.size()< 3){
         return "-ERROR RPUSH requires a key and a value";
     }
-    db.rpush(tokens[1], tokens[2]);
+
+    for(auto& i= 2; i< tokens.size();i++){
+        db.rpush(tokens[1], tokens[i]);
+   
+    }
     ssize_t len= db.llen(tokens[1]);
     return ":" + std::to_string(len)+"\r\n";
+    
 }
 static std::string handleLPop(const std::vector<std::string>& tokens, RedisDatabase& db){
     if(tokens.size()<2){
@@ -151,6 +160,22 @@ static std::string handleLSet(const std::vector<std::string>& tokens, RedisDatab
     }catch(const std::exception&){
         return "-ERROR invalid index\r\n";
     }
+}
+
+
+static std::string handleLget(std::vector<std::string>& tokens, RedisDatabase& db){
+    if(tokens.size()<2){
+        return "-Error: LGET requires key\r\n";
+    }
+    auto elems= db.lget(tokens[1]);
+    std::ostringstream oss;
+    oss << "*" << elems.size() << "\r\n";
+    for(const auto& e:elems){
+        oss << "$" << e.size() << "\r\n" << e << "\r\n";
+    }
+    return oss.str();
+
+
 }
 
 
@@ -330,6 +355,9 @@ string RedisCommandHandler::processCommand(const string& commandLine){
     }
    
     //list operations
+    else if(cmd=="LGET"){
+        return handleLget(tokens, db);
+    }
     else if(cmd=="LLEN"){
         return handleLlen(tokens, db);
     }else if(cmd=="LPUSH"){
